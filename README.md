@@ -20,4 +20,10 @@
     Edit `src/pages/index.tsx` to see your site update in real-time!
 
 3.  **Site Features**
-4.
+    It helps you to manage your reading schedule
+    it can help you to keep tracks of your book
+    You can save books based on situation like book you are currently reading or you want to read or you have finished it.
+
+4.  Many more things could have been done but as i,m not experience so there is so much mistake i have done
+
+5.  You cant visit and test at
