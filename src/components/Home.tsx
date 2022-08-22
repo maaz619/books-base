@@ -1,72 +1,51 @@
-import * as React from "react";
+import React from "react";
 import type { HeadFC } from "gatsby";
-import Login from "../components/Login";
-import Modal from "../components/Modal";
+import Modal from "./Modal";
+import EditModal from "./EditBook";
 import "../styles/global.scss";
 import Plus from "../assets/plus.svg";
 import { BookType } from "../../interface";
-import { AuthProvider, useAuth } from "../Contexts/AuthContext";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  setDoc,
-} from "firebase/firestore";
+import { useAuth } from "../Contexts/AuthContext";
+import { addData } from "../utils/utils";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../service/firebase";
 
 const Home: React.FC = (): JSX.Element => {
   const context = useAuth();
   const [bookData, setBookData] = React.useState<BookType[]>([]);
+  const [currentBook, setBook] = React.useState<BookType>();
+  const [editBook, setEditBook] = React.useState<boolean>(false);
   const [modal, setModal] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
   const userId = context?.currentUser?.uid;
-
-  const addBook = async () => {
+  const getData = async () => {
     try {
       if (userId) {
         const docRef = doc(db, `books/${userId}`);
-        await setDoc(
-          docRef,
-          {
-            bookData,
-          },
-          { merge: true }
-        );
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          docSnap.data()?.books?.forEach((doc: any) => {
+            setBookData((prev) => [...prev, doc]);
+            console.log(doc);
+          });
+          console.log(docSnap.data());
+          setLoading(true);
+        } else {
+          // doc.data() will be undefined in this case
+          console.log("No such document!");
+        }
       }
-    } catch (err) {
-      console.log(err);
+    } catch (error: any) {
+      console.log(error.message);
     }
   };
-
-  const getDataToState = async () => {
-    const docRef = doc(db, "books", `${userId}`);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      setBookData(Object.values(docSnap.data()));
-    } else {
-      // doc.data() will be undefined in this case
-      console.log("No such document!");
-    }
-  };
-
-  // React.useEffect(() => {}, [bookData]);
-
+  const updateData = async (currentTask: any) => {};
   React.useEffect(() => {
-    try {
-      if (userId) {
-        getDataToState();
-      } else {
-        console.log("user authentication error");
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  }, [userId]);
-
+    getData();
+  }, [userId, setBookData]);
   React.useEffect(() => {
-    addBook();
+    addData(bookData, userId);
   }, [bookData]);
   return (
     <>
@@ -75,6 +54,14 @@ const Home: React.FC = (): JSX.Element => {
           closeModal={setModal}
           bookData={bookData}
           setBookData={setBookData}
+          setLoading={setLoading}
+        />
+      )}
+      {editBook && (
+        <EditModal
+          editBook={setEditBook}
+          bookData={currentBook}
+          setBookData={setBook}
         />
       )}
       <header className=" w-4/6 justify-between m-auto text-center pt-6 flex">
@@ -82,8 +69,6 @@ const Home: React.FC = (): JSX.Element => {
           Books Base
         </h1>
         <nav className=" flex gap-8 items-center">
-          <h4>Home</h4>
-          <h4>My Books</h4>
           {!userId ? (
             <h4
               className=" cursor-pointer"
@@ -92,7 +77,15 @@ const Home: React.FC = (): JSX.Element => {
               Login
             </h4>
           ) : (
-            <h4 className=" cursor-pointer" onClick={() => context?.signout()}>
+            <h4
+              className=" cursor-pointer"
+              onClick={() => {
+                context?.signout();
+                setLoading(false);
+                context.currentUser = null;
+                setBookData([]);
+              }}
+            >
               Logout
             </h4>
           )}
@@ -100,7 +93,7 @@ const Home: React.FC = (): JSX.Element => {
       </header>
       <main className=" w-4/6 m-auto">
         <div className="flex justify-between items-center">
-          <h1 className=" mt-5 pt-5 pb-5">Shelves</h1>
+          <h1 className=" text-5xl font-medium mt-5 pt-5 pb-5">Shelves</h1>
           <Plus
             className="plus"
             onClick={() => {
@@ -109,25 +102,41 @@ const Home: React.FC = (): JSX.Element => {
           />
         </div>
         <p className="py-4 font-extrabold">CURRENTLY READING</p>
-        <div className=" current-books grid grid-flow-col overflow-x-scroll ">
-          {bookData.map((el) => {
-            return (
-              <div
-                key={el.id}
-                className="flex flex-1 flex-grow w-80  border p-2 mx-2 shadow"
-              >
-                <img src={el.image} alt="book image" />
-                <div className="px-4">
-                  <span>
-                    <h4>{el.name}</h4>
-                    <p className=" w-full pt-2">By:{el.author} </p>
-                  </span>
-                  <strong>{el.status}</strong>
+        {loading && bookData.length ? (
+          <div className=" current-books grid grid-flow-col overflow-x-scroll ">
+            {bookData.map((el, key) => {
+              return (
+                <div key={key} className="flex w-80  border p-2 mx-2 shadow">
+                  <>
+                    <img src={el.image} alt="book image" />
+                    <div className="flex flex-col items-center justify-between px-4">
+                      <div>
+                        <span>
+                          <h4 className="text-2xl font-bold">{el.name}</h4>
+                          <p className=" w-full pt-2">By:{el.author} </p>
+                        </span>
+                        <small className="font-semibold">{el.status}</small>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setEditBook(() => true);
+                          setBook(() => el);
+                        }}
+                        className="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        ) : bookData.length === 0 ? (
+          "No books found"
+        ) : (
+          "Loading Books...."
+        )}
       </main>
     </>
   );

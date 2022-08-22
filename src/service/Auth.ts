@@ -8,7 +8,14 @@ import {
 } from "firebase/auth";
 import React from "react";
 const googleProvider = new GoogleAuthProvider();
-
+export const Auth = () => {
+  const [currentUser, setUser] = React.useState<User | null>();
+  React.useEffect(() => {
+    return auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+  });
+};
 const signInWithGoogle = async () => {
   try {
     const res = await signInWithPopup(auth, googleProvider);

@@ -1,5 +1,5 @@
 <h1 align="center">
-  Cloud Community Days Kolkata Hackday
+  Cloud Community Days Kolkata Hackday project
 </h1>
 
 ## 🚀 Quick start
@@ -18,3 +18,6 @@
     Your site is now running at http://localhost:8000!
 
     Edit `src/pages/index.tsx` to see your site update in real-time!
+
+3.  **Site Features**
+4.

@@ -102,6 +102,8 @@
     "./gatsby-node.ts",
     "./gatsby-config.ts",
     "./types.d.ts",
-    "./plugins/**/*"
+    "./plugins/**/*",
+    "Contexts",
+    "Contexts"
   ]
 }

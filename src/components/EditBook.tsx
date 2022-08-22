@@ -2,34 +2,12 @@ import React from "react";
 import { Props } from "../../interface";
 import { useAuth } from "../Contexts/AuthContext";
 
-const Modal: React.FC<Props> = ({
-  closeModal,
+const EditModal: React.FC<any> = ({
+  editBook,
   setBookData,
   bookData,
-  setLoading,
 }): JSX.Element => {
-  const [bookDetail, setBookDetail] = React.useState({
-    name: "",
-    author: "",
-    status: "",
-    onPage: 0,
-  });
   const user = useAuth()?.currentUser;
-  const clickHandler = () => {
-    setBookData(() => [
-      ...bookData,
-      {
-        id: bookData.length,
-        name: bookDetail.name,
-        author: bookDetail.author,
-        status: bookDetail.status,
-        onPage: bookDetail.onPage,
-        image:
-          "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1442726934i/4865._SX120_.jpg",
-      },
-    ]);
-  };
-
   return (
     <>
       <div className="container flex justify-center">
@@ -43,7 +21,7 @@ const Modal: React.FC<Props> = ({
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                onClick={() => closeModal(false)}
+                onClick={() => editBook(false)}
               >
                 <path
                   strokeLinecap="round"
@@ -60,9 +38,7 @@ const Modal: React.FC<Props> = ({
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    clickHandler();
-                    closeModal(false);
-                    setLoading(true);
+                    editBook(false);
                   }}
                 >
                   <div className="">
@@ -76,13 +52,13 @@ const Modal: React.FC<Props> = ({
                       type="text"
                       name="book"
                       id="book"
-                      value={bookDetail.name}
+                      value={bookData.name}
                       className=" w-full  p-2 border rounded-md shadow focus:ring-purple-600"
                       placeholder="Enter you name"
                       required
                       onChange={(e) =>
-                        setBookDetail({
-                          ...bookDetail,
+                        setBookData({
+                          ...bookData,
                           name: e.currentTarget.value,
                         })
                       }
@@ -97,13 +73,13 @@ const Modal: React.FC<Props> = ({
                       type="text"
                       name="author"
                       id="author"
-                      value={bookDetail.author}
+                      value={bookData.author}
                       className="w-full p-2 border rounded-md shadow focus:ring-purple-600"
                       placeholder=""
                       required
                       onChange={(e) =>
-                        setBookDetail({
-                          ...bookDetail,
+                        setBookData({
+                          ...bookData,
                           author: e.currentTarget.value,
                         })
                       }
@@ -118,13 +94,13 @@ const Modal: React.FC<Props> = ({
                       type="number"
                       name="page"
                       id="page"
-                      value={bookDetail.onPage}
+                      value={bookData.onPage}
                       className="w-full p-2 border rounded-md shadow focus:ring-purple-600"
                       placeholder=""
                       required
                       onChange={(e) =>
-                        setBookDetail({
-                          ...bookDetail,
+                        setBookData({
+                          ...bookData,
                           onPage: Number(e.currentTarget.value),
                         })
                       }
@@ -141,13 +117,13 @@ const Modal: React.FC<Props> = ({
                     name="status"
                     id="status"
                     onChange={(e) =>
-                      setBookDetail({
-                        ...bookDetail,
+                      setBookData({
+                        ...bookData,
                         status: e.currentTarget.value,
                       })
                     }
                   >
-                    <option hidden disabled defaultValue="none">
+                    <option hidden disabled defaultValue={bookData.status}>
                       Choose here
                     </option>
                     <option value="Currently Reading">Currently Reading</option>
@@ -170,4 +146,4 @@ const Modal: React.FC<Props> = ({
   );
 };
 
-export default Modal;
+export default EditModal;
